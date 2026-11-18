@@ -56,13 +56,16 @@ using (var httpClient = ApiService.CreateHttpClient(settings.Api))
 PrintUser(user);
 PrintPosts(posts);
 
-// ---------- 4. Збереження в SQL Server ----------
+// ---------- 4. Збереження в SQL Server та читання через INNER JOIN ----------
 var database = new DatabaseService(settings.ConnectionString);
 try
 {
     await database.EnsureSchemaAsync();
     var result = await database.SaveUserWithPostsAsync(user, posts);
     PrintSaveResult(user, result);
+
+    var joinedRows = await database.GetUserPostsJoinedAsync(userId);
+    PrintJoinedRows(joinedRows, userId);
 }
 catch (SqlException ex)
 {
@@ -78,6 +81,35 @@ catch (FileNotFoundException ex)
 return 0;
 
 // ---------- Допоміжні методи ----------
+static void PrintJoinedRows(IReadOnlyList<UserPostRow> rows, int userId)
+{
+    Console.ForegroundColor = ConsoleColor.Yellow;
+    Console.WriteLine($"=== Дані з SQL Server (SELECT ... INNER JOIN Users ↔ Posts для userId={userId}) — {rows.Count} рядків ===");
+    Console.ResetColor();
+
+    if (rows.Count == 0)
+    {
+        Console.WriteLine("(Записів не знайдено)");
+        Console.WriteLine();
+        return;
+    }
+
+    Console.WriteLine($"{"PostId",6} | {"Автор",-22} | {"Email",-24} | Заголовок");
+    Console.WriteLine(new string('-', 95));
+
+    foreach (var row in rows)
+    {
+        var author = Truncate($"{row.UserName} (@{row.Username})", 22);
+        var email = Truncate(row.Email, 24);
+        var title = Truncate(row.PostTitle, 38);
+        Console.WriteLine($"{row.PostId,6} | {author,-22} | {email,-24} | {title}");
+    }
+    Console.WriteLine();
+}
+
+static string Truncate(string value, int maxLength) =>
+    value.Length <= maxLength ? value : value[..(maxLength - 1)] + "…";
+
 static void PrintSaveResult(User user, SaveResult result)
 {
     Console.ForegroundColor = ConsoleColor.Green;

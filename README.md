@@ -121,11 +121,12 @@ FullStack/
         │   └── AppSettings.cs        # завантаження та валідація конфігурації
         ├── Models/
         │   ├── User.cs               # DTO користувача (+ Address, Company)
-        │   └── Post.cs               # DTO поста
+        │   ├── Post.cs               # DTO поста
+        │   └── UserPostRow.cs        # DTO рядка результату INNER JOIN
         └── Services/
             ├── ApiService.cs         # HttpClient + System.Text.Json
             ├── ApiException.cs       # єдиний тип помилки API
-            ├── DatabaseService.cs    # SqlClient: схема, параметризовані INSERT/UPDATE
+            ├── DatabaseService.cs    # SqlClient: схема, параметризовані INSERT/UPDATE та SELECT INNER JOIN
             └── SaveResult.cs         # підсумок збереження
 ```
 
@@ -153,4 +154,4 @@ dotnet run --project src/ApiIntegrationApp -- 3     # userId=3 → інша ві
 - [x] Етап 2 — Конфігурація
 - [x] Етап 3 — API-клієнт
 - [x] Етап 4 — Збереження в SQL Server
-- [ ] Етап 5 — Виведення даних через JOIN
+- [x] Етап 5 — Виведення даних через JOIN

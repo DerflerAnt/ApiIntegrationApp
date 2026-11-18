@@ -167,6 +167,58 @@ public sealed class DatabaseService
         string.IsNullOrWhiteSpace(value) ? DBNull.Value : value;
 
     /// <summary>
+    /// Читає збережені дані через параметризований INNER JOIN між Users та Posts.
+    /// Якщо userId == null, повертає пости всіх користувачів у БД.
+    /// </summary>
+    public async Task<IReadOnlyList<UserPostRow>> GetUserPostsJoinedAsync(
+        int? userId = null, CancellationToken cancellationToken = default)
+    {
+        const string sql = """
+            SELECT
+                u.Id          AS UserId,
+                u.Name        AS UserName,
+                u.Username    AS Username,
+                u.Email       AS Email,
+                u.City        AS City,
+                u.CompanyName AS CompanyName,
+                p.Id          AS PostId,
+                p.Title       AS PostTitle,
+                p.Body        AS PostBody,
+                p.CreatedAt   AS CreatedAt
+            FROM dbo.Users u
+            INNER JOIN dbo.Posts p ON p.UserId = u.Id
+            WHERE (@UserId IS NULL OR u.Id = @UserId)
+            ORDER BY u.Id, p.Id;
+            """;
+
+        await using var connection = new SqlConnection(_connectionString);
+        await connection.OpenAsync(cancellationToken);
+
+        await using var command = new SqlCommand(sql, connection);
+        command.Parameters.Add("@UserId", SqlDbType.Int).Value = userId.HasValue ? userId.Value : DBNull.Value;
+
+        var rows = new List<UserPostRow>();
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+
+        while (await reader.ReadAsync(cancellationToken))
+        {
+            rows.Add(new UserPostRow(
+                UserId: reader.GetInt32(0),
+                UserName: reader.GetString(1),
+                Username: reader.GetString(2),
+                Email: reader.GetString(3),
+                City: reader.IsDBNull(4) ? null : reader.GetString(4),
+                CompanyName: reader.IsDBNull(5) ? null : reader.GetString(5),
+                PostId: reader.GetInt32(6),
+                PostTitle: reader.GetString(7),
+                PostBody: reader.GetString(8),
+                CreatedAt: reader.GetDateTime(9)));
+        }
+
+        return rows;
+    }
+
+    /// <summary>
     /// Людиночитний опис типових помилок SQL Server.
     /// </summary>
     public static string DescribeSqlError(SqlException ex) => ex.Number switch
