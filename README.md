@@ -22,6 +22,43 @@ C# Console Application (.NET 8): бере дані з публічного API
 - База: `FullStack`
 - Таблиці: `Users` (1) → `Posts` (багато), зв'язок через Foreign Key
 
+## Конфігурація
+
+Секрети (рядок підключення, ключі API) **не зберігаються в коді чи репозиторії**.
+Налаштування читаються з трьох джерел, кожне наступне перекриває попереднє:
+
+| Пріоритет | Джерело | Для чого |
+|-----------|---------|----------|
+| 1 | `appsettings.json` | Несекретні значення за замовчуванням (BaseUrl, userId, таймаут) |
+| 2 | User Secrets | Секрети для локальної розробки (зберігаються поза репозиторієм) |
+| 3 | Змінні середовища | Перевизначення на сервері / CI |
+
+### Варіант A — User Secrets (рекомендовано для розробки)
+```powershell
+dotnet user-secrets set "ConnectionStrings:FullStack" "Server=DESKTOP-9G9V9M7;Database=FullStack;Trusted_Connection=True;TrustServerCertificate=True;" --project src/ApiIntegrationApp
+
+# Якщо API потребує ключа:
+dotnet user-secrets set "Api:ApiKey" "<your-api-key>" --project src/ApiIntegrationApp
+
+# Перевірка:
+dotnet user-secrets list --project src/ApiIntegrationApp
+```
+Секрети зберігаються у `%APPDATA%\Microsoft\UserSecrets\<UserSecretsId>\secrets.json`.
+
+### Варіант B — змінні середовища
+Подвійне підкреслення `__` замінює `:` в імені ключа.
+```powershell
+# Лише для поточної сесії PowerShell:
+$env:ConnectionStrings__FullStack = "Server=DESKTOP-9G9V9M7;Database=FullStack;Trusted_Connection=True;TrustServerCertificate=True;"
+$env:Api__ApiKey = "<your-api-key>"
+$env:Api__DefaultUserId = "3"
+
+# Постійно для користувача Windows (потрібен перезапуск терміналу):
+setx ConnectionStrings__FullStack "Server=DESKTOP-9G9V9M7;Database=FullStack;Trusted_Connection=True;TrustServerCertificate=True;"
+```
+
+Якщо рядок підключення не задано, програма завершиться з кодом `1` і зрозумілим повідомленням.
+
 ## Структура проєкту
 ```
 FullStack/
@@ -30,7 +67,11 @@ FullStack/
 └── src/
     └── ApiIntegrationApp/
         ├── ApiIntegrationApp.csproj
-        └── Program.cs
+        ├── appsettings.json          # несекретні налаштування
+        ├── Program.cs
+        └── Configuration/
+            ├── ApiSettings.cs        # модель секції "Api"
+            └── AppSettings.cs        # завантаження та валідація конфігурації
 ```
 
 ## Запуск
@@ -41,7 +82,7 @@ dotnet run --project src/ApiIntegrationApp
 
 ## Стан розробки
 - [x] Етап 1 — Ініціалізація проєкту
-- [ ] Етап 2 — Конфігурація
+- [x] Етап 2 — Конфігурація
 - [ ] Етап 3 — API-клієнт
 - [ ] Етап 4 — Збереження в SQL Server
 - [ ] Етап 5 — Виведення даних через JOIN
