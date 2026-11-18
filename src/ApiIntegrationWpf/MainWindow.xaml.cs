@@ -1,7 +1,9 @@
 ﻿using System.IO;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Media;
 using ApiIntegrationApp.Configuration;
+using ApiIntegrationApp.Models;
 using ApiIntegrationApp.Services;
 using Microsoft.Data.SqlClient;
 
@@ -28,8 +30,12 @@ public partial class MainWindow : Window
             UserIdTextBox.Text = _settings.Api.DefaultUserId.ToString();
 
             var csb = new SqlConnectionStringBuilder(_settings.ConnectionString);
+            var dbName = string.IsNullOrWhiteSpace(csb.InitialCatalog)
+                ? AppSettings.ConnectionStringName
+                : csb.InitialCatalog;
+
             ConnectionInfoText.Text =
-                $"API: {_settings.Api.BaseUrl}   |   SQL Server: {csb.DataSource}   |   База: {csb.InitialCatalog}";
+                $"API: {_settings.Api.BaseUrl}   ·   SQL Server · База: {dbName}";
 
             await _databaseService.EnsureSchemaAsync();
             await LoadJoinedDataFromDatabaseAsync(showSuccessStatus: false);
@@ -123,6 +129,26 @@ public partial class MainWindow : Window
         await LoadJoinedDataFromDatabaseAsync(showSuccessStatus: true);
     }
 
+    private void PostsDataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        UpdateSelectedPostDetails(PostsDataGrid.SelectedItem as UserPostRow);
+    }
+
+    private void UpdateSelectedPostDetails(UserPostRow? row)
+    {
+        if (row is null)
+        {
+            SelectedPostTitleText.Text = "Оберіть рядок у таблиці, щоб переглянути повний текст поста";
+            SelectedPostMetaText.Text = string.Empty;
+            SelectedPostBodyText.Text = "Клікніть на будь-який запис вище — тут відобразиться повний заголовок, автор і багаторядковий текст поста.";
+            return;
+        }
+
+        SelectedPostTitleText.Text = $"[Пост #{row.PostId}] {row.PostTitle}";
+        SelectedPostMetaText.Text = $"Автор: {row.UserName} (@{row.Username}, User ID: {row.UserId}) · {row.Email}";
+        SelectedPostBodyText.Text = row.PostBody;
+    }
+
     private async Task LoadJoinedDataFromDatabaseAsync(bool showSuccessStatus)
     {
         if (_databaseService is null)
@@ -142,6 +168,15 @@ public partial class MainWindow : Window
             var rows = await _databaseService.GetUserPostsJoinedAsync(filterUserId);
             PostsDataGrid.ItemsSource = rows;
             RowCountBadge.Text = $"Рядків у таблиці: {rows.Count}";
+
+            if (rows.Count > 0)
+            {
+                PostsDataGrid.SelectedIndex = 0;
+            }
+            else
+            {
+                UpdateSelectedPostDetails(null);
+            }
 
             if (showSuccessStatus)
             {

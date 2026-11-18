@@ -5,10 +5,183 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         Title="ApiIntegrationWpf — JSONPlaceholder API ↔ SQL Server (FullStack)"
-        Height="640" Width="1100" MinHeight="480" MinWidth="820"
+        Height="720" Width="1160" MinHeight="560" MinWidth="880"
         WindowStartupLocation="CenterScreen"
-        Background="#F8FAFC"
-        FontFamily="Segoe UI">
+        Background="#F1F5F9"
+        FontFamily="Segoe UI"
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="True">
+
+    <Window.Resources>
+        <!-- Тінь для карток -->
+        <DropShadowEffect x:Key="CardShadow" BlurRadius="12" ShadowDepth="2" Direction="270" Color="#0F172A" Opacity="0.06" />
+
+        <!-- Основна синя кнопка із закругленими кутами та hover/pressed/disabled станами -->
+        <Style x:Key="PrimaryButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#2563EB" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="Padding" Value="16,0" />
+            <Setter Property="Height" Value="36" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="ButtonBorder"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="7"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="#1D4ED8" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="#1E40AF" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="#94A3B8" />
+                                <Setter Property="Foreground" Value="#F1F5F9" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Другорядна бірюзова кнопка -->
+        <Style x:Key="SecondaryButtonStyle" TargetType="Button" BasedOn="{StaticResource PrimaryButtonStyle}">
+            <Setter Property="Background" Value="#0F766E" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="ButtonBorder"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="7"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="#0D9488" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="#115E59" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="#94A3B8" />
+                                <Setter Property="Foreground" Value="#F1F5F9" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Стиль поля вводу з закругленими кутами та підсвіткою фокусу -->
+        <Style x:Key="ModernTextBoxStyle" TargetType="TextBox">
+            <Setter Property="Height" Value="36" />
+            <Setter Property="Width" Value="76" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="#0F172A" />
+            <Setter Property="Background" Value="#F8FAFC" />
+            <Setter Property="BorderBrush" Value="#CBD5E1" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border x:Name="TextBoxBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="7"
+                                Padding="6,0">
+                            <ScrollViewer x:Name="PART_ContentHost" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="TextBoxBorder" Property="BorderBrush" Value="#94A3B8" />
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="TextBoxBorder" Property="BorderBrush" Value="#2563EB" />
+                                <Setter TargetName="TextBoxBorder" Property="BorderThickness" Value="1.5" />
+                                <Setter TargetName="TextBoxBorder" Property="Background" Value="White" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Заголовки колонок DataGrid -->
+        <Style TargetType="DataGridColumnHeader">
+            <Setter Property="Background" Value="#F8FAFC" />
+            <Setter Property="Foreground" Value="#475569" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="FontSize" Value="12.5" />
+            <Setter Property="Padding" Value="12,10" />
+            <Setter Property="BorderBrush" Value="#E2E8F0" />
+            <Setter Property="BorderThickness" Value="0,0,1,1" />
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+        </Style>
+
+        <!-- Рядки DataGrid із фіксованою однорядковою висотою та hover/selected ефектами -->
+        <Style TargetType="DataGridRow">
+            <Setter Property="Height" Value="38" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Foreground" Value="#1E293B" />
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#EFF6FF" />
+                </Trigger>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="#DBEAFE" />
+                    <Setter Property="Foreground" Value="#1E3A8A" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Клітинки DataGrid з відступами без зайвої рамки фокусу -->
+        <Style TargetType="DataGridCell">
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="DataGridCell">
+                        <Border Background="{TemplateBinding Background}"
+                                Padding="12,0"
+                                SnapsToDevicePixels="True">
+                            <ContentPresenter VerticalAlignment="Center" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="Transparent" />
+                    <Setter Property="Foreground" Value="#1E3A8A" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Однорядковий текст із обрізанням через три крапки (TextTrimming) для плавного скролу -->
+        <Style x:Key="EllipsisCellTextStyle" TargetType="TextBlock">
+            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+            <Setter Property="TextWrapping" Value="NoWrap" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+
+        <Style x:Key="BoldEllipsisCellTextStyle" TargetType="TextBlock" BasedOn="{StaticResource EllipsisCellTextStyle}">
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="#0F172A" />
+        </Style>
+    </Window.Resources>
 
     <Grid Margin="18">
         <Grid.RowDefinitions>
@@ -16,111 +189,156 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <!-- Заголовок -->
-        <Border Grid.Row="0" Background="#1E293B" CornerRadius="8" Padding="16,12" Margin="0,0,0,12">
+        <!-- 1. Шапка застосунку (без імені локального комп'ютера) -->
+        <Border Grid.Row="0" Background="#0F172A" CornerRadius="10" Padding="18,14" Margin="0,0,0,12"
+                Effect="{StaticResource CardShadow}">
             <DockPanel>
                 <StackPanel DockPanel.Dock="Left">
                     <TextBlock Text="Інтеграція з JSONPlaceholder API та SQL Server"
                                Foreground="White" FontSize="17" FontWeight="SemiBold" />
                     <TextBlock x:Name="ConnectionInfoText"
-                               Text="Завантаження конфігурації..."
-                               Foreground="#94A3B8" FontSize="12" Margin="0,3,0,0" />
+                               Text="SQL Server · База: FullStack"
+                               Foreground="#94A3B8" FontSize="12.5" Margin="0,4,0,0" />
                 </StackPanel>
-                <Border DockPanel.Dock="Right" Background="#334155" CornerRadius="6"
-                        Padding="10,6" VerticalAlignment="Center" HorizontalAlignment="Right">
+                <Border DockPanel.Dock="Right" Background="#1E293B" BorderBrush="#334155" BorderThickness="1"
+                        CornerRadius="8" Padding="12,7" VerticalAlignment="Center" HorizontalAlignment="Right">
                     <TextBlock x:Name="RowCountBadge" Text="Рядків у таблиці: 0"
-                               Foreground="#E2E8F0" FontSize="12" FontWeight="SemiBold" />
+                               Foreground="#E2E8F0" FontSize="12.5" FontWeight="SemiBold" />
                 </Border>
             </DockPanel>
         </Border>
 
-        <!-- Панель керування -->
+        <!-- 2. Панель керування -->
         <Border Grid.Row="1" Background="White" BorderBrush="#E2E8F0" BorderThickness="1"
-                CornerRadius="8" Padding="14,12" Margin="0,0,0,12">
+                CornerRadius="10" Padding="16,12" Margin="0,0,0,12"
+                Effect="{StaticResource CardShadow}">
             <WrapPanel VerticalAlignment="Center">
                 <TextBlock Text="User ID (1–10):" VerticalAlignment="Center"
-                           FontWeight="SemiBold" Foreground="#334155" Margin="0,0,8,0" />
+                           FontWeight="SemiBold" Foreground="#334155" FontSize="13.5" Margin="0,0,10,0" />
 
-                <TextBox x:Name="UserIdTextBox" Text="1" Width="70" Height="32"
-                         VerticalContentAlignment="Center" HorizontalContentAlignment="Center"
-                         FontSize="14" FontWeight="SemiBold" BorderBrush="#CBD5E1"
-                         Margin="0,0,12,0" />
+                <TextBox x:Name="UserIdTextBox" Text="1"
+                         Style="{StaticResource ModernTextBoxStyle}"
+                         Margin="0,0,14,0" />
 
                 <Button x:Name="FetchAndSaveButton"
                         Content="Завантажити з API та зберегти в БД"
+                        Style="{StaticResource PrimaryButtonStyle}"
                         Click="FetchAndSaveButton_Click"
-                        Height="34" Padding="16,0" Margin="0,0,10,0"
-                        Background="#2563EB" Foreground="White" FontWeight="SemiBold"
-                        BorderThickness="0" Cursor="Hand" />
+                        Margin="0,0,10,0" />
 
                 <Button x:Name="RefreshFromDbButton"
                         Content="Оновити з БД (INNER JOIN)"
+                        Style="{StaticResource SecondaryButtonStyle}"
                         Click="RefreshFromDbButton_Click"
-                        Height="34" Padding="16,0" Margin="0,0,14,0"
-                        Background="#0F766E" Foreground="White" FontWeight="SemiBold"
-                        BorderThickness="0" Cursor="Hand" />
+                        Margin="0,0,16,0" />
 
                 <CheckBox x:Name="FilterByUserIdCheckBox"
                           Content="Фільтрувати таблицю за введеним User ID"
                           IsChecked="False"
                           Checked="FilterByUserIdCheckBox_Changed"
                           Unchecked="FilterByUserIdCheckBox_Changed"
-                          VerticalAlignment="Center" Foreground="#475569" />
+                          VerticalAlignment="Center" Foreground="#475569" FontSize="13" Cursor="Hand" />
             </WrapPanel>
         </Border>
 
-        <!-- Таблиця результатів INNER JOIN -->
+        <!-- 3. Таблиця результатів INNER JOIN (оптимізована віртуалізація та піксельний скрол) -->
         <Border Grid.Row="2" Background="White" BorderBrush="#E2E8F0" BorderThickness="1"
-                CornerRadius="8" Padding="4">
+                CornerRadius="10" Padding="2" ClipToBounds="True"
+                Effect="{StaticResource CardShadow}">
             <DataGrid x:Name="PostsDataGrid"
                       AutoGenerateColumns="False"
                       IsReadOnly="True"
                       CanUserAddRows="False"
                       CanUserDeleteRows="False"
+                      CanUserResizeRows="False"
                       SelectionMode="Single"
+                      SelectionChanged="PostsDataGrid_SelectionChanged"
                       GridLinesVisibility="Horizontal"
                       HorizontalGridLinesBrush="#F1F5F9"
                       HeadersVisibility="Column"
                       RowBackground="White"
                       AlternatingRowBackground="#F8FAFC"
+                      Background="White"
                       BorderThickness="0"
-                      FontSize="13">
+                      FontSize="13"
+                      EnableRowVirtualization="True"
+                      EnableColumnVirtualization="True"
+                      VirtualizingPanel.IsVirtualizing="True"
+                      VirtualizingPanel.VirtualizationMode="Recycling"
+                      VirtualizingPanel.ScrollUnit="Pixel"
+                      ScrollViewer.CanContentScroll="True"
+                      ScrollViewer.PanningMode="Both">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="User ID" Binding="{Binding UserId}" Width="65" />
-                    <DataGridTextColumn Header="Ім'я користувача" Binding="{Binding UserName}" Width="155" />
-                    <DataGridTextColumn Header="Username" Binding="{Binding Username}" Width="110" />
-                    <DataGridTextColumn Header="Email" Binding="{Binding Email}" Width="185" />
-                    <DataGridTextColumn Header="Post ID" Binding="{Binding PostId}" Width="65" />
-                    <DataGridTextColumn Header="Заголовок поста" Binding="{Binding PostTitle}" Width="230">
-                        <DataGridTextColumn.ElementStyle>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="TextWrapping" Value="Wrap" />
-                                <Setter Property="Padding" Value="4,3" />
-                                <Setter Property="FontWeight" Value="SemiBold" />
+                    <DataGridTextColumn Header="User ID" Binding="{Binding UserId}" Width="75"
+                                        ElementStyle="{StaticResource EllipsisCellTextStyle}" />
+                    <DataGridTextColumn Header="Ім'я користувача" Binding="{Binding UserName}" Width="160"
+                                        ElementStyle="{StaticResource EllipsisCellTextStyle}" />
+                    <DataGridTextColumn Header="Username" Binding="{Binding Username}" Width="115"
+                                        ElementStyle="{StaticResource EllipsisCellTextStyle}" />
+                    <DataGridTextColumn Header="Email" Binding="{Binding Email}" Width="190"
+                                        ElementStyle="{StaticResource EllipsisCellTextStyle}" />
+                    <DataGridTextColumn Header="Post ID" Binding="{Binding PostId}" Width="75"
+                                        ElementStyle="{StaticResource EllipsisCellTextStyle}" />
+                    <DataGridTextColumn Header="Заголовок поста" Binding="{Binding PostTitle}" Width="240"
+                                        ElementStyle="{StaticResource BoldEllipsisCellTextStyle}">
+                        <DataGridTextColumn.CellStyle>
+                            <Style TargetType="DataGridCell" BasedOn="{StaticResource {x:Type DataGridCell}}">
+                                <Setter Property="ToolTip" Value="{Binding PostTitle}" />
                             </Style>
-                        </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn.CellStyle>
                     </DataGridTextColumn>
-                    <DataGridTextColumn Header="Текст поста" Binding="{Binding PostBody}" Width="*">
-                        <DataGridTextColumn.ElementStyle>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="TextWrapping" Value="Wrap" />
-                                <Setter Property="Padding" Value="4,3" />
+                    <DataGridTextColumn Header="Текст поста (клікніть для перегляду)" Binding="{Binding SingleLineBody}" Width="*"
+                                        ElementStyle="{StaticResource EllipsisCellTextStyle}">
+                        <DataGridTextColumn.CellStyle>
+                            <Style TargetType="DataGridCell" BasedOn="{StaticResource {x:Type DataGridCell}}">
+                                <Setter Property="ToolTip" Value="{Binding PostBody}" />
                             </Style>
-                        </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn.CellStyle>
                     </DataGridTextColumn>
                 </DataGrid.Columns>
             </DataGrid>
         </Border>
 
-        <!-- Статус-бар -->
-        <Border Grid.Row="3" x:Name="StatusBorder"
+        <!-- 4. Компактна картка деталей обраного поста -->
+        <Border Grid.Row="3" Background="White" BorderBrush="#E2E8F0" BorderThickness="1"
+                CornerRadius="10" Padding="16,12" Margin="0,12,0,0"
+                Effect="{StaticResource CardShadow}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <DockPanel Grid.Row="0" Margin="0,0,0,6">
+                    <TextBlock x:Name="SelectedPostTitleText"
+                               Text="Оберіть рядок у таблиці, щоб переглянути повний текст поста"
+                               FontWeight="SemiBold" FontSize="13.5" Foreground="#0F172A"
+                               TextTrimming="CharacterEllipsis" />
+                    <TextBlock x:Name="SelectedPostMetaText"
+                               DockPanel.Dock="Right"
+                               Text=""
+                               FontSize="12" Foreground="#64748B"
+                               HorizontalAlignment="Right" VerticalAlignment="Center" Margin="12,0,0,0" />
+                </DockPanel>
+
+                <ScrollViewer Grid.Row="1" MaxHeight="74" VerticalScrollBarVisibility="Auto">
+                    <TextBlock x:Name="SelectedPostBodyText"
+                               Text="Клікніть на будь-який запис вище — тут відобразиться повний заголовок, автор і багаторядковий текст поста без затримок прокрутки таблиці."
+                               FontSize="12.5" Foreground="#475569" TextWrapping="Wrap" LineHeight="18" />
+                </ScrollViewer>
+            </Grid>
+        </Border>
+
+        <!-- 5. Статус-бар -->
+        <Border Grid.Row="4" x:Name="StatusBorder"
                 Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1"
-                CornerRadius="6" Padding="12,8" Margin="0,12,0,0">
+                CornerRadius="8" Padding="14,9" Margin="0,10,0,0">
             <TextBlock x:Name="StatusTextBlock"
-                       Text="Готово до роботи. Натисніть кнопку для завантаження або оновлення даних."
-                       Foreground="#1E40AF" FontSize="13" TextWrapping="Wrap" />
+                        Text="Готово до роботи. Натисніть кнопку для завантаження або оновлення даних."
+                        Foreground="#1E40AF" FontSize="12.5" FontWeight="Medium" TextWrapping="Wrap" />
         </Border>
     </Grid>
 </Window>

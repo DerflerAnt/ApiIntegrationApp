@@ -30,7 +30,8 @@ if (args.Length > 0)
 }
 
 var csb = new SqlConnectionStringBuilder(settings.ConnectionString);
-Console.WriteLine($"API: {settings.Api.BaseUrl} | DB: {csb.DataSource}/{csb.InitialCatalog} | userId={userId}");
+var dbName = string.IsNullOrWhiteSpace(csb.InitialCatalog) ? AppSettings.ConnectionStringName : csb.InitialCatalog;
+Console.WriteLine($"API: {settings.Api.BaseUrl} | Підключено до БД: {dbName} | userId={userId}");
 Console.WriteLine();
 
 // ---------- 2. Запит до API ----------

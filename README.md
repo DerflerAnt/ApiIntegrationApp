@@ -1,6 +1,6 @@
 # ApiIntegrationApp (Console + WPF Desktop GUI)
 
-Рішення (.NET 8) для інтеграції з публічним API [JSONPlaceholder](https://jsonplaceholder.typicode.com) та базою даних **SQL Server (`FullStack` на `DESKTOP-9G9V9M7`)**:
+Рішення (.NET 8) для інтеграції з публічним API [JSONPlaceholder](https://jsonplaceholder.typicode.com) та базою даних **SQL Server (`FullStack`)**:
 - **`ApiIntegrationCore`** — спільна бібліотека класів (`HttpClient`, `System.Text.Json`, `Microsoft.Data.SqlClient`, конфігурація через `appsettings.json` + User Secrets + змінні середовища).
 - **`ApiIntegrationApp`** — консольний застосунок, який отримує користувача та його пости з API, виводить їх у консоль, зберігає в SQL Server без дублікатів і відображає об'єднані дані через параметризований `SELECT ... INNER JOIN`.
 - **`ApiIntegrationWpf`** — десктопний WPF-застосунок із графічним інтерфейсом (`DataGrid`), полем вводу `User ID`, кнопками завантаження з API у БД та оновлення таблиці з БД через `INNER JOIN`, а також фільтрацією за `User ID`.
@@ -19,7 +19,7 @@
 | `GET /posts?userId={id}` | Пости користувача (query-параметр змінює відповідь) |
 
 ## База даних
-- Сервер: `DESKTOP-9G9V9M7`
+- СУБД: Microsoft SQL Server (локальний екземпляр `localhost` або власний сервер)
 - База: `FullStack`
 - Таблиці: `Users` (1) → `Posts` (багато), зв'язок через Foreign Key `FK_Posts_Users`
 
@@ -52,7 +52,7 @@ erDiagram
 Застосунок **виконує його автоматично при кожному старті**, тому вручну нічого робити не потрібно.
 Для ручного запуску:
 ```powershell
-sqlcmd -S DESKTOP-9G9V9M7 -d FullStack -E -C -i sql/init.sql
+sqlcmd -S localhost -d FullStack -E -C -i sql/init.sql
 ```
 
 ### Захист від дублікатів і SQL-ін'єкцій
@@ -81,7 +81,7 @@ sqlcmd -S DESKTOP-9G9V9M7 -d FullStack -E -C -i sql/init.sql
 
 ### Варіант A — User Secrets (рекомендовано для розробки)
 ```powershell
-dotnet user-secrets set "ConnectionStrings:FullStack" "Server=DESKTOP-9G9V9M7;Database=FullStack;Trusted_Connection=True;TrustServerCertificate=True;" --project src/ApiIntegrationApp
+dotnet user-secrets set "ConnectionStrings:FullStack" "Server=localhost;Database=FullStack;Trusted_Connection=True;TrustServerCertificate=True;" --project src/ApiIntegrationApp
 
 # Якщо API потребує ключа:
 dotnet user-secrets set "Api:ApiKey" "<your-api-key>" --project src/ApiIntegrationApp
@@ -95,12 +95,12 @@ dotnet user-secrets list --project src/ApiIntegrationApp
 Подвійне підкреслення `__` замінює `:` в імені ключа.
 ```powershell
 # Лише для поточної сесії PowerShell:
-$env:ConnectionStrings__FullStack = "Server=DESKTOP-9G9V9M7;Database=FullStack;Trusted_Connection=True;TrustServerCertificate=True;"
+$env:ConnectionStrings__FullStack = "Server=localhost;Database=FullStack;Trusted_Connection=True;TrustServerCertificate=True;"
 $env:Api__ApiKey = "<your-api-key>"
 $env:Api__DefaultUserId = "3"
 
 # Постійно для користувача Windows (потрібен перезапуск терміналу):
-setx ConnectionStrings__FullStack "Server=DESKTOP-9G9V9M7;Database=FullStack;Trusted_Connection=True;TrustServerCertificate=True;"
+setx ConnectionStrings__FullStack "Server=localhost;Database=FullStack;Trusted_Connection=True;TrustServerCertificate=True;"
 ```
 
 Якщо рядок підключення не задано, програма завершиться з кодом `1` і зрозумілим повідомленням.

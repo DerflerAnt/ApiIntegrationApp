@@ -6,7 +6,7 @@
     тому тут немає "USE" і "GO" — база береться з рядка підключення.
 
     Ручний запуск:
-        sqlcmd -S DESKTOP-9G9V9M7 -d FullStack -E -C -i sql/init.sql
+        sqlcmd -S localhost -d FullStack -E -C -i sql/init.sql
 
     Зв'язок: Users (1) ──< Posts (багато), Posts.UserId → Users.Id
 */
