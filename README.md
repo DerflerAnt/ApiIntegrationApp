@@ -12,6 +12,16 @@
 - `Microsoft.Data.SqlClient` — робота з SQL Server (параметризовані запити й транзакції)
 - `Microsoft.Extensions.Configuration` — `appsettings.json` / User Secrets / змінні середовища
 
+## Скриншоти роботи (Демонстрація інтерфейсу та БД)
+
+### 1. Десктопний WPF-інтерфейс (`ApiIntegrationWpf`)
+![WPF Інтерфейс](docs/wpf-ui.png)
+*Графічний інтерфейс WPF-застосунку з таблицею `DataGrid` (відображення об'єднаних даних `Users` ↔ `Posts` через `SELECT ... INNER JOIN`), панеллю керування `User ID` та карткою перегляду повного тексту обраного поста.*
+
+### 2. Збережені дані у SQL Server (`FullStack`)
+![База даних SQL Server](docs/sql-database.png)
+*Вміст таблиць `dbo.Users` та `dbo.Posts` у базі даних SQL Server (`FullStack`), зв'язаних зовнішнім ключем `FK_Posts_Users`.*
+
 ## API
 | Endpoint | Опис |
 |----------|------|
@@ -110,6 +120,9 @@ setx ConnectionStrings__FullStack "Server=localhost;Database=FullStack;Trusted_C
 FullStack/
 ├── ApiIntegrationApp.sln
 ├── README.md
+├── docs/
+│   ├── wpf-ui.png                    # скриншот WPF-застосунку
+│   └── sql-database.png              # скриншот таблиць у SQL Server
 ├── sql/
 │   └── init.sql                      # ідемпотентна схема Users/Posts
 └── src/
