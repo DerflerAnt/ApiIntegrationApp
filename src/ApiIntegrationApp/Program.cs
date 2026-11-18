@@ -56,9 +56,42 @@ using (var httpClient = ApiService.CreateHttpClient(settings.Api))
 PrintUser(user);
 PrintPosts(posts);
 
+// ---------- 4. Збереження в SQL Server ----------
+var database = new DatabaseService(settings.ConnectionString);
+try
+{
+    await database.EnsureSchemaAsync();
+    var result = await database.SaveUserWithPostsAsync(user, posts);
+    PrintSaveResult(user, result);
+}
+catch (SqlException ex)
+{
+    WriteError(DatabaseService.DescribeSqlError(ex));
+    return 3;
+}
+catch (FileNotFoundException ex)
+{
+    WriteError($"{ex.Message} ({ex.FileName})");
+    return 3;
+}
+
 return 0;
 
 // ---------- Допоміжні методи ----------
+static void PrintSaveResult(User user, SaveResult result)
+{
+    Console.ForegroundColor = ConsoleColor.Green;
+    Console.WriteLine($"=== Збереження в SQL Server ===");
+    Console.ResetColor();
+
+    var userStatus = result.UserInserted ? "додано"
+                   : result.UserUpdated ? "оновлено"
+                   : "вже існує, без змін";
+    Console.WriteLine($"Користувач {user.Id} ({user.Username}): {userStatus}");
+    Console.WriteLine($"Пости: додано {result.PostsInserted}, пропущено як дублікати {result.PostsSkipped}");
+    Console.WriteLine();
+}
+
 static void PrintUser(User user)
 {
     Console.ForegroundColor = ConsoleColor.Cyan;

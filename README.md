@@ -20,7 +20,52 @@ C# Console Application (.NET 8): бере дані з публічного API
 ## База даних
 - Сервер: `DESKTOP-9G9V9M7`
 - База: `FullStack`
-- Таблиці: `Users` (1) → `Posts` (багато), зв'язок через Foreign Key
+- Таблиці: `Users` (1) → `Posts` (багато), зв'язок через Foreign Key `FK_Posts_Users`
+
+```mermaid
+erDiagram
+    Users ||--o{ Posts : "has"
+    Users {
+        INT Id PK
+        NVARCHAR Name
+        NVARCHAR Username
+        NVARCHAR Email
+        NVARCHAR Phone
+        NVARCHAR Website
+        NVARCHAR City
+        NVARCHAR CompanyName
+        DATETIME2 CreatedAt
+        DATETIME2 UpdatedAt
+    }
+    Posts {
+        INT Id PK
+        INT UserId FK
+        NVARCHAR Title
+        NVARCHAR Body
+        DATETIME2 CreatedAt
+    }
+```
+
+### Ініціалізація схеми
+Скрипт [`sql/init.sql`](sql/init.sql) ідемпотентний (`IF OBJECT_ID(...) IS NULL`).
+Застосунок **виконує його автоматично при кожному старті**, тому вручну нічого робити не потрібно.
+Для ручного запуску:
+```powershell
+sqlcmd -S DESKTOP-9G9V9M7 -d FullStack -E -C -i sql/init.sql
+```
+
+### Захист від дублікатів і SQL-ін'єкцій
+- Усі запити параметризовані (`@Id`, `@Name`, ...) з явними типами `SqlDbType` і розмірами.
+- `Users`: `IF NOT EXISTS` → `INSERT`; інакше `UPDATE` **лише якщо дані змінилися** (порівняння через `EXCEPT`).
+- `Posts`: `IF NOT EXISTS` → `INSERT`; інакше запис пропускається.
+- Перевірки виконуються з `WITH (UPDLOCK, HOLDLOCK)` — захист від гонки при паралельних запусках.
+- Користувач і пости зберігаються в одній транзакції (або все, або нічого).
+
+Повторний запуск з тим самим `userId` не створює дублікатів:
+```
+Користувач 1 (Bret): вже існує, без змін
+Пости: додано 0, пропущено як дублікати 10
+```
 
 ## Конфігурація
 
@@ -64,6 +109,8 @@ setx ConnectionStrings__FullStack "Server=DESKTOP-9G9V9M7;Database=FullStack;Tru
 FullStack/
 ├── ApiIntegrationApp.sln
 ├── README.md
+├── sql/
+│   └── init.sql                  # ідемпотентна схема Users/Posts
 └── src/
     └── ApiIntegrationApp/
         ├── ApiIntegrationApp.csproj
@@ -77,7 +124,9 @@ FullStack/
         │   └── Post.cs               # DTO поста
         └── Services/
             ├── ApiService.cs         # HttpClient + System.Text.Json
-            └── ApiException.cs       # єдиний тип помилки API
+            ├── ApiException.cs       # єдиний тип помилки API
+            ├── DatabaseService.cs    # SqlClient: схема, параметризовані INSERT/UPDATE
+            └── SaveResult.cs         # підсумок збереження
 ```
 
 ## Обробка помилок API
@@ -90,6 +139,7 @@ FullStack/
 | Некоректний JSON | `JsonException` | `Не вдалося розібрати JSON...`, код `2` |
 | Порожнє тіло / `null` / порожній список | `ApiException` | `API повернуло порожню відповідь...`, код `2` |
 | Некоректний аргумент userId | — | код `1` |
+| Помилка SQL Server (недоступний сервер, немає бази, FK тощо) | `SqlException` | опис + `[SQL <номер>]`, код `3` |
 
 ## Запуск
 ```powershell
@@ -102,5 +152,5 @@ dotnet run --project src/ApiIntegrationApp -- 3     # userId=3 → інша ві
 - [x] Етап 1 — Ініціалізація проєкту
 - [x] Етап 2 — Конфігурація
 - [x] Етап 3 — API-клієнт
-- [ ] Етап 4 — Збереження в SQL Server
+- [x] Етап 4 — Збереження в SQL Server
 - [ ] Етап 5 — Виведення даних через JOIN
