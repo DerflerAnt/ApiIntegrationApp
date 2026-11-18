@@ -1,15 +1,16 @@
-# ApiIntegrationApp
+# ApiIntegrationApp (Console + WPF Desktop GUI)
 
-C# Console Application (.NET 8): бере дані з публічного API
-[JSONPlaceholder](https://jsonplaceholder.typicode.com), виводить їх у консоль,
-зберігає в SQL Server і показує збережені дані через `JOIN`.
+Рішення (.NET 8) для інтеграції з публічним API [JSONPlaceholder](https://jsonplaceholder.typicode.com) та базою даних **SQL Server (`FullStack` на `DESKTOP-9G9V9M7`)**:
+- **`ApiIntegrationCore`** — спільна бібліотека класів (`HttpClient`, `System.Text.Json`, `Microsoft.Data.SqlClient`, конфігурація через `appsettings.json` + User Secrets + змінні середовища).
+- **`ApiIntegrationApp`** — консольний застосунок, який отримує користувача та його пости з API, виводить їх у консоль, зберігає в SQL Server без дублікатів і відображає об'єднані дані через параметризований `SELECT ... INNER JOIN`.
+- **`ApiIntegrationWpf`** — десктопний WPF-застосунок із графічним інтерфейсом (`DataGrid`), полем вводу `User ID`, кнопками завантаження з API у БД та оновлення таблиці з БД через `INNER JOIN`, а також фільтрацією за `User ID`.
 
 ## Технології
-- .NET 8, C#
+- .NET 8, C#, WPF (`net8.0-windows`)
 - `HttpClient` — HTTP-запити
 - `System.Text.Json` — десеріалізація JSON
-- `Microsoft.Data.SqlClient` — робота з SQL Server
-- `Microsoft.Extensions.Configuration` — appsettings / User Secrets / змінні середовища
+- `Microsoft.Data.SqlClient` — робота з SQL Server (параметризовані запити й транзакції)
+- `Microsoft.Extensions.Configuration` — `appsettings.json` / User Secrets / змінні середовища
 
 ## API
 | Endpoint | Опис |
@@ -110,24 +111,30 @@ FullStack/
 ├── ApiIntegrationApp.sln
 ├── README.md
 ├── sql/
-│   └── init.sql                  # ідемпотентна схема Users/Posts
+│   └── init.sql                      # ідемпотентна схема Users/Posts
 └── src/
-    └── ApiIntegrationApp/
-        ├── ApiIntegrationApp.csproj
-        ├── appsettings.json          # несекретні налаштування
-        ├── Program.cs
-        ├── Configuration/
-        │   ├── ApiSettings.cs        # модель секції "Api"
-        │   └── AppSettings.cs        # завантаження та валідація конфігурації
-        ├── Models/
-        │   ├── User.cs               # DTO користувача (+ Address, Company)
-        │   ├── Post.cs               # DTO поста
-        │   └── UserPostRow.cs        # DTO рядка результату INNER JOIN
-        └── Services/
-            ├── ApiService.cs         # HttpClient + System.Text.Json
-            ├── ApiException.cs       # єдиний тип помилки API
-            ├── DatabaseService.cs    # SqlClient: схема, параметризовані INSERT/UPDATE та SELECT INNER JOIN
-            └── SaveResult.cs         # підсумок збереження
+    ├── ApiIntegrationCore/           # спільна бібліотека бізнес-логіки та доступу до даних
+    │   ├── ApiIntegrationCore.csproj
+    │   ├── appsettings.json          # несекретні налаштування
+    │   ├── Configuration/
+    │   │   ├── ApiSettings.cs        # модель секції "Api"
+    │   │   └── AppSettings.cs        # завантаження та валідація конфігурації
+    │   ├── Models/
+    │   │   ├── User.cs               # DTO користувача (+ Address, Company)
+    │   │   ├── Post.cs               # DTO поста
+    │   │   └── UserPostRow.cs        # DTO рядка результату INNER JOIN
+    │   └── Services/
+    │       ├── ApiService.cs         # HttpClient + System.Text.Json
+    │       ├── ApiException.cs       # єдиний тип помилки API
+    │       ├── DatabaseService.cs    # SqlClient: схема, параметризовані INSERT/UPDATE та SELECT INNER JOIN
+    │       └── SaveResult.cs         # підсумок збереження
+    ├── ApiIntegrationApp/            # консольний застосунок
+    │   ├── ApiIntegrationApp.csproj
+    │   └── Program.cs
+    └── ApiIntegrationWpf/            # десктопний WPF-застосунок (GUI з DataGrid)
+        ├── ApiIntegrationWpf.csproj
+        ├── App.xaml / App.xaml.cs
+        └── MainWindow.xaml / MainWindow.xaml.cs
 ```
 
 ## Обробка помилок API
@@ -145,8 +152,13 @@ FullStack/
 ## Запуск
 ```powershell
 dotnet build
+
+# 1. Консольний застосунок:
 dotnet run --project src/ApiIntegrationApp          # userId з конфігурації (за замовчуванням 1)
 dotnet run --project src/ApiIntegrationApp -- 3     # userId=3 → інша відповідь API
+
+# 2. Десктопний WPF-застосунок (GUI з таблицею DataGrid):
+dotnet run --project src/ApiIntegrationWpf
 ```
 
 ## Стан розробки
@@ -155,3 +167,4 @@ dotnet run --project src/ApiIntegrationApp -- 3     # userId=3 → інша ві
 - [x] Етап 3 — API-клієнт
 - [x] Етап 4 — Збереження в SQL Server
 - [x] Етап 5 — Виведення даних через JOIN
+- [x] Етап 6 — Спільна бібліотека `ApiIntegrationCore` та десктопний WPF-інтерфейс `ApiIntegrationWpf`

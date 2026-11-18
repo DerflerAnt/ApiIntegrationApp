@@ -1,0 +1,126 @@
+﻿<Window x:Class="ApiIntegrationWpf.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="ApiIntegrationWpf — JSONPlaceholder API ↔ SQL Server (FullStack)"
+        Height="640" Width="1100" MinHeight="480" MinWidth="820"
+        WindowStartupLocation="CenterScreen"
+        Background="#F8FAFC"
+        FontFamily="Segoe UI">
+
+    <Grid Margin="18">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Заголовок -->
+        <Border Grid.Row="0" Background="#1E293B" CornerRadius="8" Padding="16,12" Margin="0,0,0,12">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Left">
+                    <TextBlock Text="Інтеграція з JSONPlaceholder API та SQL Server"
+                               Foreground="White" FontSize="17" FontWeight="SemiBold" />
+                    <TextBlock x:Name="ConnectionInfoText"
+                               Text="Завантаження конфігурації..."
+                               Foreground="#94A3B8" FontSize="12" Margin="0,3,0,0" />
+                </StackPanel>
+                <Border DockPanel.Dock="Right" Background="#334155" CornerRadius="6"
+                        Padding="10,6" VerticalAlignment="Center" HorizontalAlignment="Right">
+                    <TextBlock x:Name="RowCountBadge" Text="Рядків у таблиці: 0"
+                               Foreground="#E2E8F0" FontSize="12" FontWeight="SemiBold" />
+                </Border>
+            </DockPanel>
+        </Border>
+
+        <!-- Панель керування -->
+        <Border Grid.Row="1" Background="White" BorderBrush="#E2E8F0" BorderThickness="1"
+                CornerRadius="8" Padding="14,12" Margin="0,0,0,12">
+            <WrapPanel VerticalAlignment="Center">
+                <TextBlock Text="User ID (1–10):" VerticalAlignment="Center"
+                           FontWeight="SemiBold" Foreground="#334155" Margin="0,0,8,0" />
+
+                <TextBox x:Name="UserIdTextBox" Text="1" Width="70" Height="32"
+                         VerticalContentAlignment="Center" HorizontalContentAlignment="Center"
+                         FontSize="14" FontWeight="SemiBold" BorderBrush="#CBD5E1"
+                         Margin="0,0,12,0" />
+
+                <Button x:Name="FetchAndSaveButton"
+                        Content="Завантажити з API та зберегти в БД"
+                        Click="FetchAndSaveButton_Click"
+                        Height="34" Padding="16,0" Margin="0,0,10,0"
+                        Background="#2563EB" Foreground="White" FontWeight="SemiBold"
+                        BorderThickness="0" Cursor="Hand" />
+
+                <Button x:Name="RefreshFromDbButton"
+                        Content="Оновити з БД (INNER JOIN)"
+                        Click="RefreshFromDbButton_Click"
+                        Height="34" Padding="16,0" Margin="0,0,14,0"
+                        Background="#0F766E" Foreground="White" FontWeight="SemiBold"
+                        BorderThickness="0" Cursor="Hand" />
+
+                <CheckBox x:Name="FilterByUserIdCheckBox"
+                          Content="Фільтрувати таблицю за введеним User ID"
+                          IsChecked="False"
+                          Checked="FilterByUserIdCheckBox_Changed"
+                          Unchecked="FilterByUserIdCheckBox_Changed"
+                          VerticalAlignment="Center" Foreground="#475569" />
+            </WrapPanel>
+        </Border>
+
+        <!-- Таблиця результатів INNER JOIN -->
+        <Border Grid.Row="2" Background="White" BorderBrush="#E2E8F0" BorderThickness="1"
+                CornerRadius="8" Padding="4">
+            <DataGrid x:Name="PostsDataGrid"
+                      AutoGenerateColumns="False"
+                      IsReadOnly="True"
+                      CanUserAddRows="False"
+                      CanUserDeleteRows="False"
+                      SelectionMode="Single"
+                      GridLinesVisibility="Horizontal"
+                      HorizontalGridLinesBrush="#F1F5F9"
+                      HeadersVisibility="Column"
+                      RowBackground="White"
+                      AlternatingRowBackground="#F8FAFC"
+                      BorderThickness="0"
+                      FontSize="13">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="User ID" Binding="{Binding UserId}" Width="65" />
+                    <DataGridTextColumn Header="Ім'я користувача" Binding="{Binding UserName}" Width="155" />
+                    <DataGridTextColumn Header="Username" Binding="{Binding Username}" Width="110" />
+                    <DataGridTextColumn Header="Email" Binding="{Binding Email}" Width="185" />
+                    <DataGridTextColumn Header="Post ID" Binding="{Binding PostId}" Width="65" />
+                    <DataGridTextColumn Header="Заголовок поста" Binding="{Binding PostTitle}" Width="230">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="TextWrapping" Value="Wrap" />
+                                <Setter Property="Padding" Value="4,3" />
+                                <Setter Property="FontWeight" Value="SemiBold" />
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+                    <DataGridTextColumn Header="Текст поста" Binding="{Binding PostBody}" Width="*">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="TextWrapping" Value="Wrap" />
+                                <Setter Property="Padding" Value="4,3" />
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+
+        <!-- Статус-бар -->
+        <Border Grid.Row="3" x:Name="StatusBorder"
+                Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1"
+                CornerRadius="6" Padding="12,8" Margin="0,12,0,0">
+            <TextBlock x:Name="StatusTextBlock"
+                       Text="Готово до роботи. Натисніть кнопку для завантаження або оновлення даних."
+                       Foreground="#1E40AF" FontSize="13" TextWrapping="Wrap" />
+        </Border>
+    </Grid>
+</Window>
