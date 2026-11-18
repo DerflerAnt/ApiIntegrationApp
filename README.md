@@ -69,20 +69,38 @@ FullStack/
         ├── ApiIntegrationApp.csproj
         ├── appsettings.json          # несекретні налаштування
         ├── Program.cs
-        └── Configuration/
-            ├── ApiSettings.cs        # модель секції "Api"
-            └── AppSettings.cs        # завантаження та валідація конфігурації
+        ├── Configuration/
+        │   ├── ApiSettings.cs        # модель секції "Api"
+        │   └── AppSettings.cs        # завантаження та валідація конфігурації
+        ├── Models/
+        │   ├── User.cs               # DTO користувача (+ Address, Company)
+        │   └── Post.cs               # DTO поста
+        └── Services/
+            ├── ApiService.cs         # HttpClient + System.Text.Json
+            └── ApiException.cs       # єдиний тип помилки API
 ```
+
+## Обробка помилок API
+
+| Ситуація | Виняток | Повідомлення / код виходу |
+|----------|---------|---------------------------|
+| Статус ≠ 2xx (напр. 404) | `HttpRequestException` після `EnsureSuccessStatusCode()` | `API повернуло помилковий статус 404...`, код `2` |
+| Немає мережі / DNS | `HttpRequestException` без статусу | `Не вдалося з'єднатися з API...`, код `2` |
+| Таймаут | `TaskCanceledException` | `Перевищено час очікування...`, код `2` |
+| Некоректний JSON | `JsonException` | `Не вдалося розібрати JSON...`, код `2` |
+| Порожнє тіло / `null` / порожній список | `ApiException` | `API повернуло порожню відповідь...`, код `2` |
+| Некоректний аргумент userId | — | код `1` |
 
 ## Запуск
 ```powershell
 dotnet build
-dotnet run --project src/ApiIntegrationApp
+dotnet run --project src/ApiIntegrationApp          # userId з конфігурації (за замовчуванням 1)
+dotnet run --project src/ApiIntegrationApp -- 3     # userId=3 → інша відповідь API
 ```
 
 ## Стан розробки
 - [x] Етап 1 — Ініціалізація проєкту
 - [x] Етап 2 — Конфігурація
-- [ ] Етап 3 — API-клієнт
+- [x] Етап 3 — API-клієнт
 - [ ] Етап 4 — Збереження в SQL Server
 - [ ] Етап 5 — Виведення даних через JOIN
